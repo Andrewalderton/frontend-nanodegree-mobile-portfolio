@@ -2,7 +2,7 @@
 var gulp = require('gulp'),
   jshint = require('gulp-jshint'),
   notify = require('gulp-notify'),
-  minifycss = require('gulp-minify-css'),
+  cleanCSS = require('gulp-clean-css'),
   uglify = require('gulp-uglify'),
   imagemin = require('gulp-imagemin'),
   rename = require('gulp-rename'),
@@ -55,27 +55,27 @@ gulp.task('images', function() {
     .pipe(gulp.dest('dist/img')),
 
     gulp.src(imagePizza)
-    .pipe(cache(imagemin({ optimizationLevel: 5, progressive: true, interlaced: true })))
+    .pipe(cache(imagemin({ optimizationLevel: 3, progressive: true, interlaced: true })))
     .pipe(gulp.dest('dist/views/images'))
-    .pipe(notify({ message: 'Images have been optimized' })
+    .pipe(notify({ message: 'Images have been optimized' }))
   ]
 });
 
 // Generate & Inline Critical-path CSS, then minify html
-gulp.task('cssMinify', function () {
+gulp.task('inline', function () {
   return [
     gulp.src(html)
     .pipe(critical({base: 'tmp', inline: true, minify: true, css: [css[0], css[1]] }))
     .pipe(htmlreplace({js: 'js/perfmatters.min.js'}))
     .pipe(htmlMin({collapseWhitespace: true}))
-    .pipe(rename({ suffix: '.min' }))
+    //.pipe(rename({ suffix: '.min' }))
     .pipe(gulp.dest('dist')),
 
     gulp.src(htmlPizza)
     .pipe(critical({base: 'tmp', inline: true, minify: true, css: [css[2], css[3]] }))
     .pipe(htmlreplace({js: 'js/main.min.js'}))
     .pipe(htmlMin({collapseWhitespace: true}))
-    .pipe(rename({ suffix: '.min' }))
+    //.pipe(rename({ suffix: '.min' }))
     .pipe(gulp.dest('dist/views'))
 
     .pipe(notify({ message: 'CSS inlined and HTML minified' }))
@@ -86,6 +86,19 @@ gulp.task('cssMinify', function () {
 gulp.task('del', function() {
   del([ 'tmp/**', '!tmp' ])
 });
+
+// Minify CSS
+gulp.task('cssMin', function() {
+  return [
+  gulp.src('css/*.css')
+  .pipe(cleanCSS({compatibility: 'ie8'}))
+  .pipe(gulp.dest('dist/css')),
+
+  gulp.src('views/css/*.css')
+  .pipe(cleanCSS({compatibility: 'ie8'}))
+    .pipe(gulp.dest('dist/views/css'))
+  ]
+})
 
 // Minify JS
 gulp.task('scripts', function() {
@@ -130,5 +143,5 @@ gulp.task('watch', function() {
 
 // Default Task
 gulp.task('default', ['del'], function() {
-  runSequence('cssMinify', ['scripts', 'images', 'lint', 'watch', 'browser-sync'] )
+  runSequence('inline', ['scripts', 'cssMin', 'images', 'lint', 'watch', 'browser-sync'] )
 });
