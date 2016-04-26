@@ -14,19 +14,12 @@ var gulp = require('gulp'),
   critical = require('critical').stream,
   browserSync = require('browser-sync'),
   runSequence = require('run-sequence'),
+  defer = require('gulp-defer'),
   del = require('del');
 
 // Sources
-var images = [
-  'img/2048.png',
-  'img/cam_be_like.jpg',
-  'img/mobilewebdev.jpg',
-  'img/profilepic.jpg'
-];
-var imagePizza  = [
-  'views/images/pizza.png',
-  'views/images/pizzeria.jpg'
-];
+var images = 'img/*.{gif,jpg,png,svg}';
+var imagePizza  = 'views/images/*.{gif,jpg,png,svg}';
 var js = [
   'js/perfmatters.js',
   'views/js/main.js'
@@ -43,9 +36,7 @@ var html = [
   'project-mobile.html',
   'project-webperf.html'
 ];
-var htmlPizza = [
-  'views/pizza.html'
-];
+var htmlPizza = 'views/pizza.html';
 
 //Optimize Images
 gulp.task('images', function() {
@@ -61,19 +52,23 @@ gulp.task('images', function() {
   ]
 });
 
-// Generate & Inline Critical-path CSS, then minify html
+// Move scripts to bottom of html pages
+// Generate & Inline Critical-path CSS for above the fold content
+// Minify html
 gulp.task('inline', function () {
   return [
     gulp.src(html)
-    .pipe(critical({base: 'tmp', inline: true, minify: true, css: [css[0], css[1]] }))
     .pipe(htmlreplace({js: 'js/perfmatters.min.js'}))
+    .pipe(defer())
+    .pipe(critical({base: 'tmp', inline: true, minify: true, css: [css[0], css[1]] }))
     .pipe(htmlMin({collapseWhitespace: true}))
     //.pipe(rename({ suffix: '.min' }))
     .pipe(gulp.dest('dist')),
 
     gulp.src(htmlPizza)
-    .pipe(critical({base: 'tmp', inline: true, minify: true, css: [css[2], css[3]] }))
     .pipe(htmlreplace({js: 'js/main.min.js'}))
+    .pipe(defer())
+    .pipe(critical({base: 'tmp', inline: true, minify: true, css: [css[2], css[3]] }))
     .pipe(htmlMin({collapseWhitespace: true}))
     //.pipe(rename({ suffix: '.min' }))
     .pipe(gulp.dest('dist/views'))
@@ -87,7 +82,7 @@ gulp.task('del', function() {
   del([ 'tmp/**', '!tmp' ])
 });
 
-// Minify CSS
+// Minify CSS files
 gulp.task('cssMin', function() {
   return [
   gulp.src('css/*.css')
