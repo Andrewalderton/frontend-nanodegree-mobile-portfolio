@@ -18,36 +18,36 @@ var gulp = require('gulp'),
   del = require('del');
 
 // Sources
-var images = 'img/*.{gif,jpg,png,svg}';
-var imagePizza  = 'views/images/*.{gif,jpg,png,svg}';
+var images = 'src/img/*.{gif,jpg,png,svg}';
+var imagePizza  = 'src/views/images/*.{gif,jpg,png,svg}';
 var js = [
-  'js/perfmatters.js',
-  'views/js/main.js'
+  'src/js/perfmatters.js',
+  'src/views/js/main.js'
 ];
 var css = [
-  'css/print.css',
-  'css/style.css',
-  'views/css/bootstrap-grid.css',
-  'views/css/style.css'
+  'src/css/print.css',
+  'src/css/style.css',
+  'src/views/css/bootstrap-grid.css',
+  'src/views/css/style.css'
 ];
 var html = [
-  'index.html',
-  'project-2048.html',
-  'project-mobile.html',
-  'project-webperf.html'
+  'src/index.html',
+  'src/project-2048.html',
+  'src/project-mobile.html',
+  'src/project-webperf.html'
 ];
-var htmlPizza = 'views/pizza.html';
+var htmlPizza = 'src/views/pizza.html';
 
 //Optimize Images
 gulp.task('images', function() {
   return [
     gulp.src(images)
     .pipe(cache(imagemin({ optimizationLevel: 3, progressive: true, interlaced: true })))
-    .pipe(gulp.dest('dist/img')),
+    .pipe(gulp.dest('./dist/img')),
 
     gulp.src(imagePizza)
     .pipe(cache(imagemin({ optimizationLevel: 3, progressive: true, interlaced: true })))
-    .pipe(gulp.dest('dist/views/images'))
+    .pipe(gulp.dest('./dist/views/images'))
     .pipe(notify({ message: 'Images have been optimized' }))
   ]
 });
@@ -60,18 +60,18 @@ gulp.task('inline', function () {
     gulp.src(html)
     .pipe(htmlreplace({js: 'js/perfmatters.min.js'}))
     .pipe(defer())
-    .pipe(critical({base: 'tmp', inline: true, minify: true, css: [css[0], css[1]] }))
+    .pipe(critical({base: 'src/tmp', inline: true, minify: true, css: [css[0], css[1]] }))
     .pipe(htmlMin({collapseWhitespace: true}))
     //.pipe(rename({ suffix: '.min' }))
-    .pipe(gulp.dest('dist')),
+    .pipe(gulp.dest('./dist')),
 
     gulp.src(htmlPizza)
     .pipe(htmlreplace({js: 'js/main.min.js'}))
     .pipe(defer())
-    .pipe(critical({base: 'tmp', inline: true, minify: true, css: [css[2], css[3]] }))
+    .pipe(critical({base: 'src/tmp', inline: true, minify: true, css: [css[2], css[3]] }))
     .pipe(htmlMin({collapseWhitespace: true}))
     //.pipe(rename({ suffix: '.min' }))
-    .pipe(gulp.dest('dist/views'))
+    .pipe(gulp.dest('./dist/views'))
 
     .pipe(notify({ message: 'CSS inlined and HTML minified' }))
   ]
@@ -79,19 +79,19 @@ gulp.task('inline', function () {
 
 // Delete leftover temp files from 'critical' plugin
 gulp.task('del', function() {
-  del([ 'tmp/**', '!tmp' ])
+  del([ 'src/tmp/**', '!src/tmp' ])
 });
 
 // Minify CSS files
 gulp.task('cssMin', function() {
   return [
-  gulp.src('css/*.css')
+  gulp.src('src/css/*.css')
   .pipe(cleanCSS({compatibility: 'ie8'}))
-  .pipe(gulp.dest('dist/css')),
+  .pipe(gulp.dest('./dist/css')),
 
-  gulp.src('views/css/*.css')
+  gulp.src('src/views/css/*.css')
   .pipe(cleanCSS({compatibility: 'ie8'}))
-    .pipe(gulp.dest('dist/views/css'))
+    .pipe(gulp.dest('./dist/views/css'))
   ]
 })
 
@@ -101,12 +101,12 @@ gulp.task('scripts', function() {
     gulp.src(js[1])
     .pipe(uglify())
     .pipe(rename({ suffix: '.min' }))
-    .pipe(gulp.dest('dist/views/js')),
+    .pipe(gulp.dest('./dist/views/js')),
 
     gulp.src(js[0])
     .pipe(uglify())
     .pipe(rename({ suffix: '.min' }))
-    .pipe(gulp.dest('dist/js'))
+    .pipe(gulp.dest('./dist/js'))
     .pipe(notify({ message: 'JS minified' }))
   ]
 });
